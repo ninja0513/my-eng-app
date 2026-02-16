@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="EngMaster">
-    
     <link rel="manifest" href="manifest.json">
-    
     <title>English Spelling Master Pro V14</title>
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -24,35 +20,24 @@
             font-family: 'Outfit', 'Noto Sans JP', sans-serif; 
             background-color: #F8FAFC; 
             margin: 0; padding: 0;
-            /* iOSのバウンス（跳ね返り）を抑制 */
-            position: fixed; width: 100%; height: 100%;
             overflow: hidden;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
         .app-container { 
-            /* iPhoneのノッチとホームバーを考慮した高さ設定 */
             height: 100vh;
             height: -webkit-fill-available;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
-            max-width: 768px; 
-            margin: 0 auto; 
-            background: #FFFFFF; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 0 60px rgba(0,0,0,0.07);
+            max-width: 768px; margin: 0 auto; 
+            background: #FFFFFF; display: flex; flex-direction: column; 
+            position: relative; box-shadow: 0 0 60px rgba(0,0,0,0.07);
         }
-        .main-scroll {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+        .main-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .btn-press { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
         .btn-press:active { transform: scale(0.96) translateY(2px); opacity: 0.9; }
         .shake-ui { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-        /* モバイルでキーボードが出た時にフォントサイズが小さいとズームしてしまうのを防ぐ */
         input:focus { font-size: 16px !important; outline: none; border-color: var(--primary) !important; }
     </style>
 </head>
@@ -65,7 +50,9 @@
         const MASTER_DATA = [
             {id:'R1',word:'Good morning',ja:'おはよう'},{id:'R5',word:'How are you?',ja:'お元気ですか'},{id:'R7',word:'Nice to meet you',ja:'はじめまして'},{id:'R11',word:'look at',ja:'〜を見る'},{id:'R14',word:'come back',ja:'戻る'},{id:'R16',word:'come home',ja:'帰宅する'},{id:'R19',word:'go to school',ja:'学校に行く'},{id:'R20',word:'go home',ja:'家に帰る'},{id:'R23',word:'listen to',ja:'〜を聞く'},{id:'R24',word:'sit down',ja:'座る'},{id:'R25',word:'stand up',ja:'立つ'},{id:'R32',word:'by bus',ja:'バスで'},{id:'R39',word:'get up',ja:'起きる'},{id:'R40',word:'go to bed',ja:'寝る'},
             {id:'R42',word:'look for',ja:'〜を探す'},{id:'R49',word:'Here you are',ja:'はい、どうぞ'},{id:'R50',word:'years old',ja:'〜歳'},{id:'R52',word:'How many',ja:'いくつの'},{id:'R53',word:'How much',ja:'いくらの'},{id:'R54',word:'How about',ja:'〜はどう？'},{id:'R61',word:'arrive at',ja:'到着する'},{id:'R62',word:'get to',ja:'到着する'},{id:'R69',word:'be interested in',ja:'興味がある'},{id:'R73',word:'be going to',ja:'つもりだ'},{id:'R80',word:'have to',ja:'しなければならない'},
-            {id:'D1',word:'Sunday',ja:'日曜日'},{id:'D2',word:'Monday',ja:'月曜日'},{id:'D3',word:'Tuesday',ja:'火曜日'},{id:'D4',word:'Wednesday',ja:'水曜日'},{id:'D5',word:'Thursday',ja:'木曜日'},{id:'D6',word:'Friday',ja:'金曜日'},{id:'D7',word:'Saturday',ja:'土曜日'}
+            {id:'R81',word:"don't have to",ja:'必要はない'},{id:'R84',word:'for example',ja:'例えば'},{id:'R90',word:'run away',ja:'逃げる'},{id:'R96',word:'in the future',ja:'将来は'},{id:'R103',word:'decide to',ja:'決心する'},{id:'R105',word:'enjoy ~ing',ja:'楽しむ'},{id:'R108',word:'look forward to',ja:'楽しみに待つ'},{id:'R111',word:'take care of',ja:'世話をする'},{id:'R120',word:'as soon as',ja:'するとすぐに'},
+            {id:'R122',word:'like the best',ja:'一番好きだ'},{id:'R133',word:'each other',ja:'お互いに'},{id:'R138',word:'grow up',ja:'成長する'},{id:'R144',word:'in front of',ja:'前に'},{id:'R146',word:'on the way to',ja:'行く途中で'},{id:'R149',word:'leave a message',ja:'伝言を残す'},{id:'R151',word:'have a good time',ja:'楽しむ'},{id:'R154',word:'take a walk',ja:'散歩する'},{id:'R156',word:'Just a minute',ja:'ちょっと待って'},
+            {id:'D1',word:'Sunday',ja:'日曜日'},{id:'D2',word:'Monday',ja:'月曜日'},{id:'D3',word:'Tuesday',ja:'火曜日'},{id:'D4',word:'Wednesday',ja:'水曜日'},{id:'D5',word:'Thursday',ja:'木曜日'},{id:'D6',word:'Friday',ja:'金曜日'},{id:'D7',word:'Saturday',ja:'土曜日'},{id:'M1',word:'January',ja:'1月'},{id:'M8',word:'August',ja:'8月'},{id:'S1',word:'spring',ja:'春'},{id:'S2',word:'summer',ja:'夏'},{id:'S3',word:'fall',ja:'秋'},{id:'S4',word:'winter',ja:'冬'},{id:'DIR1',word:'east',ja:'東'},{id:'DIR2',word:'west',ja:'西'},{id:'DIR3',word:'south',ja:'南'},{id:'DIR4',word:'north',ja:'北'}
         ];
 
         function App() {
@@ -96,8 +83,8 @@
             };
 
             const startSession = (num) => {
-                let pool = MASTER_DATA.sort(()=>Math.random()-0.5);
-                setQuizList(pool.slice(0,10));
+                let pool = num === 1 ? MASTER_DATA.slice(0,14) : num === 2 ? MASTER_DATA.slice(14,25) : num === 3 ? MASTER_DATA.slice(25,35) : num === 4 ? MASTER_DATA.slice(35,45) : MASTER_DATA.slice(45);
+                setQuizList(pool.sort(()=>Math.random()-0.5).slice(0,10));
                 setQIdx(0); setScore(0); setInput(''); setIsEvaluated(false);
                 setScene('play');
             };
@@ -108,8 +95,7 @@
                 const current = quizList[qIdx];
                 const target = current.word.toLowerCase().replace(/[?.,!~()]/g, '').trim();
                 const correct = input.toLowerCase().trim() === target;
-                setIsCorrect(correct);
-                setIsEvaluated(true);
+                setIsCorrect(correct); setIsEvaluated(true);
                 if (correct) setScore(s => s + 1);
                 speak(current.word);
                 setStats(prev => {
@@ -126,99 +112,86 @@
 
             return (
                 <div className="app-container">
-                    <div className="bg-white px-6 py-4 flex justify-between items-center shrink-0 border-b">
-                        <h1 className="text-xl font-black italic text-slate-800">ENGLISH <span className="text-indigo-600">MASTER</span></h1>
-                        {scene !== 'home' && <button onClick={()=>setScene('home')} className="text-[10px] font-black bg-slate-100 px-4 py-2 rounded-full btn-press uppercase tracking-wider">Exit</button>}
+                    <div className="bg-white border-b px-6 py-4 flex justify-between items-center shrink-0 z-50">
+                        <h1 className="text-xl font-black italic tracking-tighter">English <span className="text-indigo-600">Master Pro</span></h1>
+                        {scene !== 'home' && <button onClick={()=>setScene('home')} className="text-[10px] font-black bg-slate-100 px-4 py-2 rounded-full btn-press uppercase">Menu</button>}
                     </div>
 
                     <div className="main-scroll" ref={scrollRef}>
                         {scene === 'home' && (
                             <div className="px-6 py-8 space-y-8">
-                                <div className="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
-                                    <div className="relative z-10">
-                                        <h2 className="text-xs font-bold opacity-80 uppercase tracking-widest mb-1">Total Accuracy</h2>
-                                        <div className="text-6xl font-black italic">{totalAccuracy}%</div>
-                                    </div>
+                                <div className="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                                    <h2 className="text-sm font-bold opacity-60 tracking-widest mb-1 italic">Accuracy</h2>
+                                    <div className="text-7xl font-black italic leading-none">{totalAccuracy}%</div>
                                     <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10 italic">PRO</div>
                                 </div>
-
-                                <div className="grid gap-4">
-                                    {[1,2,3].map(n => (
-                                        <button key={n} onClick={()=>startSession(n)} className="w-full bg-white p-6 rounded-3xl border-2 border-slate-100 flex justify-between items-center btn-press hover:border-indigo-200">
-                                            <div className="text-left">
-                                                <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-tighter">Session</span>
-                                                <div className="text-2xl font-black italic text-slate-800">0{n} Challenge</div>
-                                            </div>
-                                            <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">→</div>
+                                <div className="space-y-4">
+                                    {[1,2,3,4,5].map(n => (
+                                        <button key={n} onClick={()=>startSession(n)} className="w-full bg-white p-6 rounded-3xl border-b-8 border-slate-100 border-2 flex justify-between items-center btn-press">
+                                            <div className="text-left font-black italic uppercase">Session 0{n}</div>
+                                            <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold">GO</div>
                                         </button>
                                     ))}
-                                    <button onClick={()=>setScene('dictionary')} className="w-full bg-slate-900 text-white p-6 rounded-3xl flex justify-between items-center btn-press mt-4">
-                                        <span className="font-bold italic uppercase">Dictionary 📚</span>
+                                    <button onClick={()=>setScene('dictionary')} className="w-full bg-slate-900 text-white p-6 rounded-3xl flex justify-between items-center btn-press shadow-xl">
+                                        <span className="font-black italic uppercase">Master Dictionary 📚</span>
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {scene === 'play' && (
-                            <div className="px-6 py-10 flex flex-col h-full">
-                                <div className="text-center space-y-4 mb-10">
-                                    <span className="inline-block bg-indigo-50 text-indigo-600 text-[10px] font-bold px-4 py-1 rounded-full uppercase italic">Question {qIdx + 1}/10</span>
-                                    <h2 className="text-5xl font-black text-slate-800 italic uppercase">{quizList[qIdx].ja}</h2>
-                                </div>
-                                
-                                {!isEvaluated ? (
-                                    <form onSubmit={handleCheck} className="space-y-6">
-                                        <input 
-                                            autoFocus 
-                                            type="text" 
-                                            value={input} 
-                                            onChange={(e)=>setInput(e.target.value)} 
-                                            className="w-full py-8 text-4xl text-center font-black rounded-3xl bg-slate-50 border-4 border-transparent focus:bg-white focus:border-indigo-500 transition-all" 
-                                            placeholder="Type here..." 
-                                            autoCapitalize="none" autoCorrect="off"
-                                        />
-                                        <button type="submit" className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-2xl btn-press shadow-lg shadow-indigo-200 uppercase italic">Check Answer</button>
-                                    </form>
-                                ) : (
-                                    <div className="space-y-6 animate-in zoom-in-95">
-                                        <div className={`p-10 rounded-[3rem] text-center border-4 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-rose-50 border-rose-200 text-rose-600'}`}>
-                                            <p className="text-xs font-bold uppercase mb-2 tracking-widest">{isCorrect ? 'Correct!' : 'Incorrect'}</p>
-                                            <p className="text-5xl font-black italic uppercase leading-tight">{quizList[qIdx].word}</p>
+                        {scene === 'dictionary' && (
+                            <div className="px-6 py-8 space-y-4">
+                                <button onClick={()=>setScene('home')} className="text-indigo-600 font-black mb-4 flex items-center gap-2">← Back</button>
+                                {MASTER_DATA.map(item => {
+                                    const d = stats[item.id] || {correct:0, total:0};
+                                    const r = d.total > 0 ? Math.round((d.correct/d.total)*100) : null;
+                                    return (
+                                        <div key={item.id} className="bg-white p-5 rounded-2xl border flex justify-between items-center">
+                                            <div>
+                                                <h4 className="text-lg font-black italic">{item.word}</h4>
+                                                <p className="text-xs text-slate-400 font-bold">{item.ja}</p>
+                                            </div>
+                                            <span className={`text-[10px] font-black px-3 py-1 rounded-full ${r===null?'bg-slate-50 text-slate-300':r>=90?'bg-indigo-600 text-white':'bg-rose-50 text-rose-600'}`}>
+                                                {r!==null?`${r}%`:'NEW'}
+                                            </span>
                                         </div>
-                                        <button onClick={handleNext} className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-2xl btn-press uppercase italic">Next →</button>
-                                    </div>
-                                )}
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {scene === 'play' && (
+                            <div className="p-6 h-full flex flex-col justify-center min-h-[70vh]">
+                                <div className={`text-center space-y-6 ${isEvaluated && !isCorrect ? 'shake-ui' : ''}`}>
+                                    <h2 className="text-6xl font-black text-slate-800 italic uppercase">{quizList[qIdx].ja}</h2>
+                                    {!isEvaluated ? (
+                                        <form onSubmit={handleCheck} className="space-y-6">
+                                            <input autoFocus type="text" value={input} onChange={(e)=>setInput(e.target.value)} className="w-full py-10 text-5xl text-center font-black rounded-[3rem] bg-slate-50 border-4 border-transparent focus:border-indigo-500 focus:bg-white shadow-xl" placeholder="..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
+                                            <button type="submit" className="w-full bg-indigo-600 text-white py-6 rounded-[2rem] font-black text-2xl btn-press uppercase italic">Check</button>
+                                        </form>
+                                    ) : (
+                                        <div className="space-y-6 animate-in zoom-in-95">
+                                            <div className={`p-10 rounded-[3rem] border-4 ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-rose-50 border-rose-200 text-rose-600'}`}>
+                                                <p className="text-6xl font-black italic uppercase leading-none">{quizList[qIdx].word}</p>
+                                            </div>
+                                            <button onClick={handleNext} className="w-full bg-slate-900 text-white py-8 rounded-[2.5rem] font-black text-3xl btn-press uppercase italic">Next →</button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
                         {scene === 'result' && (
-                            <div className="px-6 py-20 text-center space-y-10">
-                                <div>
-                                    <div className="text-8xl mb-4">🏆</div>
-                                    <h2 className="text-4xl font-black italic text-slate-800 uppercase">Clear!</h2>
+                            <div className="p-8 text-center space-y-10 min-h-[80vh] flex flex-col justify-center">
+                                <h2 className="text-5xl font-black italic uppercase">Finished!</h2>
+                                <div className="bg-slate-50 p-12 rounded-[4rem]">
+                                    <div className="text-[10rem] font-black text-indigo-600 leading-none">{score}<span className="text-4xl text-slate-300 ml-2">/10</span></div>
                                 </div>
-                                <div className="bg-slate-50 p-10 rounded-[3rem]">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Session Score</p>
-                                    <div className="text-8xl font-black text-indigo-600 italic">{score}<span className="text-2xl text-slate-300">/10</span></div>
-                                </div>
-                                <button onClick={()=>setScene('home')} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-2xl btn-press uppercase italic">Finish</button>
-                            </div>
-                        )}
-                        
-                        {scene === 'dictionary' && (
-                            <div className="px-6 py-8">
-                                <button onClick={()=>setScene('home')} className="text-indigo-600 font-bold mb-6 flex items-center gap-2">← Back</button>
-                                <div className="space-y-3">
-                                    {MASTER_DATA.map(item => (
-                                        <div key={item.id} className="bg-white p-5 rounded-2xl border border-slate-100 flex justify-between items-center">
-                                            <div>
-                                                <p className="text-lg font-black italic text-slate-800 leading-none">{item.word}</p>
-                                                <p className="text-xs text-slate-400 font-bold">{item.ja}</p>
-                                            </div>
-                                            <div className="text-[10px] font-black bg-slate-50 text-slate-400 px-3 py-1 rounded-full">{item.id}</div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <button onClick={() => {
+                                    const msg = `今日のスペリング完了！スコア: ${score}/10, 達成率: ${totalAccuracy}%`;
+                                    window.location.href=`mailto:?subject=英語学習レポート&body=${encodeURIComponent(msg)}`;
+                                }} className="w-full bg-emerald-500 text-white py-6 rounded-[2rem] font-black text-2xl btn-press italic">📧 結果を報告</button>
+                                <button onClick={()=>setScene('home')} className="w-full font-black text-slate-400 py-4 uppercase">Home</button>
                             </div>
                         )}
                     </div>
@@ -228,13 +201,10 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-        
-        // PWA用のService Worker登録
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(() => {
-                    console.log('Service Worker Registered');
-                });
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
     </script>
