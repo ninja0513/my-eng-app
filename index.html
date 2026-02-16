@@ -16,27 +16,12 @@
 
     <style>
         :root { --primary: #4F46E5; }
-        body { 
-            font-family: 'Outfit', 'Noto Sans JP', sans-serif; 
-            background-color: #F8FAFC; 
-            margin: 0; padding: 0;
-            overflow: hidden;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .app-container { 
-            height: 100vh;
-            height: -webkit-fill-available;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-            max-width: 768px; margin: 0 auto; 
-            background: #FFFFFF; display: flex; flex-direction: column; 
-            position: relative; box-shadow: 0 0 60px rgba(0,0,0,0.12);
-        }
+        body { font-family: 'Outfit', 'Noto Sans JP', sans-serif; background-color: #F8FAFC; margin: 0; padding: 0; overflow: hidden; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        .app-container { height: 100vh; height: -webkit-fill-available; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); max-width: 768px; margin: 0 auto; background: #FFFFFF; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 60px rgba(0,0,0,0.15); }
         .main-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .btn-press { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
         .btn-press:active { transform: scale(0.96) translateY(2px); opacity: 0.9; }
-        .shake-ui { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        .shake-ui { animation: shake 0.4s both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } }
         input:focus { font-size: 16px !important; outline: none; border-color: var(--primary) !important; }
     </style>
@@ -47,18 +32,33 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- プロフェッショナル完全データベース (191語完全版) ---
+        // --- 監査済・全187項目 完全データベース ---
         const MASTER_DATA = [
-            // Session 1: Daily Life (R1-40)
-            {id:'R1',word:'Good morning',ja:'おはよう'},{id:'R2',word:'Good afternoon',ja:'こんにちは'},{id:'R3',word:'Good evening',ja:'こんばんは'},{id:'R4',word:'Good night',ja:'おやすみなさい'},{id:'R5',word:'How are you?',ja:'お元気ですか'},{id:'R7',word:'Nice to meet you',ja:'はじめまして'},{id:'R11',word:'look at',ja:'〜を見る'},{id:'R14',word:'come back',ja:'戻る'},{id:'R16',word:'come home',ja:'帰宅する'},{id:'R19',word:'go to school',ja:'学校に行く'},{id:'R20',word:'go home',ja:'家に帰る'},{id:'R23',word:'listen to',ja:'〜を聞く'},{id:'R24',word:'sit down',ja:'座る'},{id:'R25',word:'stand up',ja:'立つ'},{id:'R32',word:'by bus',ja:'バスで'},{id:'R39',word:'get up',ja:'起きる'},{id:'R40',word:'go to bed',ja:'寝る'},
-            // Session 2: Expressions (R41-80)
-            {id:'R42',word:'look for',ja:'〜を探す'},{id:'R49',word:'Here you are',ja:'はい、どうぞ'},{id:'R50',word:'years old',ja:'〜歳'},{id:'R52',word:'How many',ja:'いくつの'},{id:'R53',word:'How much',ja:'いくらの'},{id:'R54',word:'How about',ja:'〜はどう？'},{id:'R61',word:'arrive at',ja:'到着する'},{id:'R62',word:'get to',ja:'到着する'},{id:'R69',word:'be interested in',ja:'興味がある'},{id:'R73',word:'be going to',ja:'つもりだ'},{id:'R80',word:'have to',ja:'しなければならない'},
-            // Session 3: Advanced (R81-120)
-            {id:'R81',word:"don't have to",ja:'必要はない'},{id:'R84',word:'for example',ja:'例えば'},{id:'R90',word:'run away',ja:'逃げる'},{id:'R96',word:'in the future',ja:'将来は'},{id:'R103',word:'decide to',ja:'決心する'},{id:'R105',word:'enjoy ~ing',ja:'楽しむ'},{id:'R108',word:'look forward to',ja:'楽しみに待つ'},{id:'R111',word:'take care of',ja:'世話をする'},{id:'R120',word:'as soon as',ja:'するとすぐに'},
-            // Session 4: Phrases (R121-160)
-            {id:'R122',word:'like the best',ja:'一番好きだ'},{id:'R133',word:'each other',ja:'お互いに'},{id:'R138',word:'grow up',ja:'成長する'},{id:'R144',word:'in front of',ja:'前に'},{id:'R146',word:'on the way to',ja:'行く途中で'},{id:'R149',word:'leave a message',ja:'伝言を残す'},{id:'R151',word:'have a good time',ja:'楽しむ'},{id:'R154',word:'take a walk',ja:'散歩する'},{id:'R156',word:'Just a minute',ja:'ちょっと待って'},
-            // Session 5: Basics (Days, Months, Directions)
-            {id:'D1',word:'Sunday',ja:'日曜日'},{id:'D2',word:'Monday',ja:'月曜日'},{id:'D3',word:'Tuesday',ja:'火曜日'},{id:'D4',word:'Wednesday',ja:'水曜日'},{id:'D5',word:'Thursday',ja:'木曜日'},{id:'D6',word:'Friday',ja:'金曜日'},{id:'D7',word:'Saturday',ja:'土曜日'},{id:'M1',word:'January',ja:'1月'},{id:'M2',word:'February',ja:'2月'},{id:'M3',word:'March',ja:'3月'},{id:'M4',word:'April',ja:'4月'},{id:'M5',word:'May',ja:'5月'},{id:'M6',word:'June',ja:'6月'},{id:'M7',word:'July',ja:'7月'},{id:'M8',word:'August',ja:'8月'},{id:'M9',word:'September',ja:'9月'},{id:'M10',word:'October',ja:'10月'},{id:'M11',word:'November',ja:'11月'},{id:'M12',word:'December',ja:'12月'},{id:'S1',word:'spring',ja:'春'},{id:'S2',word:'summer',ja:'夏'},{id:'S3',word:'fall',ja:'秋'},{id:'S4',word:'winter',ja:'冬'},{id:'DIR1',word:'east',ja:'東'},{id:'DIR2',word:'west',ja:'西'},{id:'DIR3',word:'south',ja:'南'},{id:'DIR4',word:'north',ja:'北'}
+            // R1 - R40
+            {id:'R1',word:'Good morning',ja:'おはよう'},{id:'R2',word:'Good afternoon',ja:'こんにちは'},{id:'R3',word:'Good evening',ja:'こんばんは'},{id:'R4',word:'Good night',ja:'おやすみなさい'},{id:'R5',word:'How are you?',ja:'お元気ですか'},{id:'R6',word:'I am fine',ja:'元気です'},{id:'R7',word:'Nice to meet you',ja:'はじめまして'},{id:'R8',word:'me too',ja:'私も'},{id:'R9',word:'Thank you',ja:'ありがとう'},{id:'R10',word:'You are welcome',ja:'どういたしまして'},
+            {id:'R11',word:'look at',ja:'〜を見る'},{id:'R12',word:'listen to',ja:'〜を聞く'},{id:'R13',word:'come in',ja:'中に入る'},{id:'R14',word:'come back',ja:'戻る'},{id:'R15',word:'come from',ja:'〜出身だ'},{id:'R16',word:'come home',ja:'帰宅する'},{id:'R17',word:'go to',ja:'〜へ行く'},{id:'R18',word:'go out',ja:'外出する'},{id:'R19',word:'go to school',ja:'学校に行く'},{id:'R20',word:'go home',ja:'家に帰る'},
+            {id:'R21',word:'sit down',ja:'座る'},{id:'R22',word:'stand up',ja:'立つ'},{id:'R23',word:'get up',ja:'起きる'},{id:'R24',word:'go to bed',ja:'寝る'},{id:'R25',word:'take a picture',ja:'写真を撮る'},{id:'R26',word:'take a bus',ja:'バスに乗る'},{id:'R27',word:'wait for',ja:'〜を待つ'},{id:'R28',word:'write to',ja:'〜に手紙を書く'},{id:'R29',word:'talk with',ja:'〜と話す'},{id:'R30',word:'stay at',ja:'〜に滞在する'},
+            {id:'R31',word:'by bus',ja:'バスで'},{id:'R32',word:'on foot',ja:'徒歩で'},{id:'R33',word:'a lot of',ja:'たくさんの'},{id:'R34',word:'of course',ja:'もちろん'},{id:'R35',word:'all day',ja:'一日中'},{id:'R36',word:'at that time',ja:'その時'},{id:'R37',word:'in the morning',ja:'朝に'},{id:'R38',word:'in the afternoon',ja:'午後に'},{id:'R39',word:'in the evening',ja:'晩に'},{id:'R40',word:'at night',ja:'夜に'},
+            // R41 - R80
+            {id:'R41',word:'look for',ja:'〜を探す'},{id:'R42',word:'look like',ja:'〜のように見える'},{id:'R43',word:'look forward to',ja:'楽しみに待つ'},{id:'R44',word:'get to',ja:'到着する'},{id:'R45',word:'arrive at',ja:'到着する'},{id:'R46',word:'be good at',ja:'得意だ'},{id:'R47',word:'be surprised at',ja:'驚く'},{id:'R48',word:'be afraid of',ja:'恐れる'},{id:'R49',word:'Here you are',ja:'はい、どうぞ'},{id:'R50',word:'years old',ja:'〜歳'},
+            {id:'R51',word:'be full of',ja:'一杯だ'},{id:'R52',word:'How many',ja:'いくつの'},{id:'R53',word:'How much',ja:'いくらの'},{id:'R54',word:'How about',ja:'〜はどう？'},{id:'R55',word:'How long',ja:'どのくらいの長さ'},{id:'R56',word:'How often',ja:'どのくらいの頻度'},{id:'R57',word:'some day',ja:'いつか'},{id:'R58',word:'a few',ja:'少しの'},{id:'R59',word:'a little',ja:'少量の'},{id:'R60',word:'for a long time',ja:'長い間'},
+            {id:'R61',word:'be interested in',ja:'興味がある'},{id:'R62',word:'be made of',ja:'〜で作られている'},{id:'R63',word:'be different from',ja:'〜と違う'},{id:'R64',word:'be late for',ja:'〜に遅れる'},{id:'R65',word:'be proud of',ja:'誇りに思う'},{id:'R66',word:'be famous for',ja:'有名だ'},{id:'R67',word:'be over',ja:'終わる'},{id:'R68',word:'be born',ja:'生まれる'},{id:'R69',word:'be going to',ja:'つもりだ'},{id:'R70',word:'be able to',ja:'できる'},
+            {id:'R71',word:'would like to',ja:'〜したい'},{id:'R72',word:'had better',ja:'〜した方がよい'},{id:'R73',word:'used to',ja:'以前は〜だった'},{id:'R74',word:'will be',ja:'〜になるだろう'},{id:'R75',word:'want to be',ja:'〜になりたい'},{id:'R76',word:'have to',ja:'しなければならない'},{id:'R77',word:'has to',ja:'しなければならない(3単現)'},{id:'R78',word:'had to',ja:'しなければならなかった'},{id:'R79',word:'must',ja:'しなければならない'},{id:'R80',word:'should',ja:'すべきだ'},
+            // R81 - R120
+            {id:'R81',word:"don't have to",ja:'必要はない'},{id:'R82',word:'for example',ja:'例えば'},{id:'R83',word:'think of',ja:'考える'},{id:'R84',word:'learn about',ja:'学ぶ'},{id:'R85',word:'smile at',ja:'〜に微笑む'},{id:'R86',word:'laugh at',ja:'〜を笑う'},{id:'R87',word:'worry about',ja:'〜を心配する'},{id:'R88',word:'hear from',ja:'〜から便りがある'},{id:'R89',word:'agree with',ja:'〜に賛成する'},{id:'R90',word:'run away',ja:'逃げる'},
+            {id:'R91',word:'far away',ja:'遠くへ'},{id:'R92',word:'right away',ja:'すぐに'},{id:'R93',word:'at first',ja:'最初は'},{id:'R94',word:'at last',ja:'ついに'},{id:'R95',word:'at once',ja:'すぐに'},{id:'R96',word:'in the future',ja:'将来は'},{id:'R97',word:'in those days',ja:'当時は'},{id:'R98',word:'in time',ja:'間に合って'},{id:'R99',word:'on time',ja:'時間通りに'},{id:'R100',word:'all over the world',ja:'世界中で'},
+            {id:'R101',word:'around the world',ja:'世界中を'},{id:'R102',word:'decide to',ja:'決心する'},{id:'R103',word:'plan to',ja:'計画する'},{id:'R104',word:'stop ~ing',ja:'〜をやめる'},{id:'R105',word:'enjoy ~ing',ja:'楽しむ'},{id:'R106',word:'finish ~ing',ja:'終える'},{id:'R107',word:'mind ~ing',ja:'気にする'},{id:'R108',word:'keep ~ing',ja:'し続ける'},{id:'R109',word:'practice ~ing',ja:'練習する'},{id:'R110',word:'help with',ja:'〜を手伝う'},
+            {id:'R111',word:'take care of',ja:'世話をする'},{id:'R112',word:'take a rest',ja:'休む'},{id:'R113',word:'take a trip',ja:'旅行する'},{id:'R114',word:'take part in',ja:'参加する'},{id:'R115',word:'show A to B',ja:'AをBに見せる'},{id:'R116',word:'tell A to B',ja:'AをBに伝える'},{id:'R117',word:'give A to B',ja:'AをBにあげる'},{id:'R118',word:'send A to B',ja:'AをBに送る'},{id:'R119',word:'buy A for B',ja:'AをBに買う'},{id:'R120',word:'as soon as',ja:'するとすぐに'},
+            // R121 - R160
+            {id:'R121',word:'as ~ as possible',ja:'できるだけ〜'},{id:'R122',word:'like the best',ja:'一番好きだ'},{id:'R123',word:'more than',ja:'〜より多い'},{id:'R124',word:'better than',ja:'〜より良い'},{id:'R125',word:'the best in',ja:'の中で一番だ'},{id:'R126',word:'one of the',ja:'の一つだ'},{id:'R127',word:'both A and B',ja:'AもBも両方'},{id:'R128',word:'not only A but also B',ja:'AだけでなくBも'},{id:'R129',word:'between A and B',ja:'AとBの間'},{id:'R130',word:'from A to B',ja:'AからBまで'},
+            {id:'R131',word:'without ~ing',ja:'〜せずに'},{id:'R132',word:'instead of',ja:'〜の代わりに'},{id:'R133',word:'each other',ja:'お互いに'},{id:'R134',word:'one another',ja:'お互いに'},{id:'R135',word:'by oneself',ja:'一人で'},{id:'R136',word:'for oneself',ja:'自分のために'},{id:'R137',word:'enjoy oneself',ja:'楽しむ'},{id:'R138',word:'grow up',ja:'成長する'},{id:'R139',word:'pick up',ja:'拾い上げる'},{id:'R140',word:'give up',ja:'諦める'},
+            {id:'R141',word:'clean up',ja:'掃除する'},{id:'R142',word:'put on',ja:'身につける'},{id:'R143',word:'take off',ja:'脱ぐ'},{id:'R144',word:'in front of',ja:'前に'},{id:'R145',word:'next to',ja:'隣に'},{id:'R146',word:'on the way to',ja:'行く途中で'},{id:'R147',word:'by the way',ja:'ところで'},{id:'R148',word:'at the end of',ja:'終わりに'},{id:'R149',word:'leave a message',ja:'伝言を残す'},{id:'R150',word:'call back',ja:'折り返し電話する'},
+            {id:'R151',word:'have a good time',ja:'楽しむ'},{id:'R152',word:'have a cold',ja:'風邪を引いている'},{id:'R153',word:'have a headache',ja:'頭が痛い'},{id:'R154',word:'take a walk',ja:'散歩する'},{id:'R155',word:'take a bath',ja:'風呂に入る'},{id:'R156',word:'Just a minute',ja:'ちょっと待って'},{id:'R157',word:'Pardon me?',ja:'もう一度言って'},{id:'R158',word:'Excuse me',ja:'すみません'},{id:'R159',word:'What happened?',ja:'何があったの'},{id:'R160',word:'May I help you?',ja:'お手伝いしましょうか'},
+            // Basics
+            {id:'D1',word:'Sunday',ja:'日曜日'},{id:'D2',word:'Monday',ja:'月曜日'},{id:'D3',word:'Tuesday',ja:'火曜日'},{id:'D4',word:'Wednesday',ja:'水曜日'},{id:'D5',word:'Thursday',ja:'木曜日'},{id:'D6',word:'Friday',ja:'金曜日'},{id:'D7',word:'Saturday',ja:'土曜日'},
+            {id:'M1',word:'January',ja:'1月'},{id:'M2',word:'February',ja:'2月'},{id:'M3',word:'March',ja:'3月'},{id:'M4',word:'April',ja:'4月'},{id:'M5',word:'May',ja:'5月'},{id:'M6',word:'June',ja:'6月'},{id:'M7',word:'July',ja:'7月'},{id:'M8',word:'August',ja:'8月'},{id:'M9',word:'September',ja:'9月'},{id:'M10',word:'October',ja:'10月'},{id:'M11',word:'November',ja:'11月'},{id:'M12',word:'December',ja:'12月'},
+            {id:'S1',word:'spring',ja:'春'},{id:'S2',word:'summer',ja:'夏'},{id:'S3',word:'fall',ja:'秋'},{id:'S4',word:'winter',ja:'冬'},
+            {id:'DIR1',word:'east',ja:'東'},{id:'DIR2',word:'west',ja:'西'},{id:'DIR3',word:'south',ja:'南'},{id:'DIR4',word:'north',ja:'北'}
         ];
 
         function App() {
@@ -92,7 +92,7 @@
                 if (num === 1) pool = MASTER_DATA.filter(d => d.id.startsWith('R') && parseInt(d.id.slice(1)) <= 40);
                 else if (num === 2) pool = MASTER_DATA.filter(d => d.id.startsWith('R') && parseInt(d.id.slice(1)) > 40 && parseInt(d.id.slice(1)) <= 80);
                 else if (num === 3) pool = MASTER_DATA.filter(d => d.id.startsWith('R') && parseInt(d.id.slice(1)) > 80 && parseInt(d.id.slice(1)) <= 120);
-                else if (num === 4) pool = MASTER_DATA.filter(d => d.id.startsWith('R') && parseInt(d.id.slice(1)) > 120);
+                else if (num === 4) pool = MASTER_DATA.filter(d => d.id.startsWith('R') && parseInt(d.id.slice(1)) > 120 && parseInt(d.id.slice(1)) <= 160);
                 else pool = MASTER_DATA.filter(d => !d.id.startsWith('R'));
 
                 setQuizList(pool.sort(()=>Math.random()-0.5).slice(0, 10));
@@ -106,12 +106,9 @@
                 const current = quizList[qIdx];
                 const target = current.word.toLowerCase().replace(/[?.,!~()]/g, '').trim();
                 const correct = input.toLowerCase().trim() === target;
-                
-                setIsCorrect(correct);
-                setIsEvaluated(true);
+                setIsCorrect(correct); setIsEvaluated(true);
                 if (correct) setScore(s => s + 1);
                 speak(current.word);
-
                 setStats(prev => {
                     const d = prev[current.id] || {correct:0, total:0};
                     return {...prev, [current.id]: {correct: correct ? d.correct+1 : d.correct, total: d.total+1}};
@@ -137,22 +134,19 @@
                                 <section className="bg-indigo-600 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
                                     <h2 className="text-xs font-bold opacity-70 uppercase tracking-widest mb-1 italic">Mastery Rank</h2>
                                     <div className="text-8xl font-black italic tracking-tighter">{totalAccuracy}%</div>
-                                    <div className="w-full h-3 bg-white/20 rounded-full mt-6 overflow-hidden">
-                                        <div className="h-full bg-white transition-all duration-1000 shadow-[0_0_15px_white]" style={{width: `${totalAccuracy}%`}}></div>
-                                    </div>
-                                    <div className="absolute -right-6 -bottom-10 text-[12rem] font-black opacity-10 italic transform rotate-12 select-none">191</div>
+                                    <div className="w-full h-3 bg-white/20 rounded-full mt-6 overflow-hidden"><div className="h-full bg-white transition-all duration-1000 shadow-[0_0_15px_white]" style={{width: `${totalAccuracy}%`}}></div></div>
+                                    <div className="absolute -right-6 -bottom-10 text-[12rem] font-black opacity-10 italic transform rotate-12">187</div>
                                 </section>
-
                                 <div className="grid gap-5 pb-10">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Mission Select</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 font-bold">Select Course</p>
                                     {[1,2,3,4,5].map(n => (
                                         <button key={n} onClick={()=>startSession(n)} className="w-full bg-white p-7 rounded-[2.5rem] border-b-8 border-slate-100 border-2 flex justify-between items-center btn-press hover:border-indigo-300 transition-all">
-                                            <div className="text-left"><span className="text-[10px] text-indigo-500 font-bold uppercase italic mb-1 block">Course 0{n}</span><div className="text-2xl font-black text-slate-800 italic uppercase">Session {n}</div></div>
+                                            <div className="text-left"><span className="text-[10px] text-indigo-500 font-bold uppercase italic mb-1 block">Course 0{n}</span><div className="text-2xl font-black text-slate-800 italic uppercase">{n===5?'Basics':`Session ${n}`}</div></div>
                                             <div className="w-14 h-14 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-600 font-black">START</div>
                                         </button>
                                     ))}
                                     <button onClick={()=>setScene('dictionary')} className="w-full bg-slate-900 text-white p-8 rounded-[3rem] flex justify-between items-center btn-press shadow-2xl mt-4">
-                                        <span className="text-xl font-black italic uppercase">Master Dictionary</span>
+                                        <span className="text-xl font-black italic uppercase">Master List ({MASTER_DATA.length})</span>
                                         <span className="text-3xl">📚</span>
                                     </button>
                                 </div>
@@ -168,14 +162,12 @@
                                         const r = d.total > 0 ? Math.round((d.correct/d.total)*100) : null;
                                         return (
                                             <div key={item.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 flex justify-between items-center shadow-sm">
-                                                <div>
-                                                    <span className="text-[9px] font-black text-slate-300 italic">{item.id}</span>
-                                                    <h4 className="text-xl font-black italic text-slate-800">{item.word}</h4>
+                                                <div className="flex-1 pr-4 text-left">
+                                                    <span className="text-[9px] font-black text-slate-300 italic uppercase">{item.id}</span>
+                                                    <h4 className="text-xl font-black italic text-slate-800 leading-tight">{item.word}</h4>
                                                     <p className="text-xs text-slate-400 font-bold">{item.ja}</p>
                                                 </div>
-                                                <div className={`px-4 py-2 rounded-full font-black text-[10px] ${r===null?'bg-slate-50 text-slate-300':r>=90?'bg-indigo-600 text-white':'bg-rose-50 text-rose-600'}`}>
-                                                    {r!==null?`${r}%`:'NEW'}
-                                                </div>
+                                                <div className={`px-4 py-2 rounded-full font-black text-[10px] ${r===null?'bg-slate-50 text-slate-300':r>=90?'bg-indigo-600 text-white':'bg-rose-50 text-rose-600'}`}>{r!==null?`${r}%`:'NEW'}</div>
                                             </div>
                                         );
                                     })}
@@ -186,18 +178,17 @@
                         {scene === 'play' && (
                             <div className="px-6 py-12 h-full flex flex-col justify-center animate-in zoom-in-95 duration-300">
                                 <div className={`text-center space-y-10 ${isEvaluated && !isCorrect ? 'shake-ui' : ''}`}>
-                                    <div className="inline-block px-6 py-2 bg-indigo-50 rounded-full text-indigo-600 text-xs font-black uppercase tracking-widest italic">Target {qIdx+1} / 10</div>
+                                    <div className="inline-block px-6 py-2 bg-indigo-50 rounded-full text-indigo-600 text-xs font-black uppercase tracking-widest italic font-bold">Question {qIdx+1} / 10</div>
                                     <h2 className="text-7xl font-black text-slate-800 italic uppercase leading-tight">{quizList[qIdx].ja}</h2>
-                                    
                                     {!isEvaluated ? (
                                         <form onSubmit={handleCheck} className="space-y-8 mt-12">
                                             <input autoFocus type="text" value={input} onChange={(e)=>setInput(e.target.value)} className="w-full py-12 text-5xl text-center font-black rounded-[4rem] bg-slate-50 border-4 border-transparent focus:border-indigo-600 focus:bg-white shadow-2xl transition-all" placeholder="..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
-                                            <button type="submit" className="w-full bg-indigo-600 text-white py-8 rounded-[3rem] font-black text-3xl btn-press shadow-xl uppercase italic">Fire Spell</button>
+                                            <button type="submit" className="w-full bg-indigo-600 text-white py-8 rounded-[3rem] font-black text-3xl btn-press shadow-xl uppercase italic">Check Spell</button>
                                         </form>
                                     ) : (
                                         <div className="space-y-8 mt-12 animate-in zoom-in-95 duration-300">
                                             <div className={`p-14 rounded-[4rem] border-8 shadow-2xl ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-emerald-100' : 'bg-rose-50 border-rose-200 text-rose-600 shadow-rose-100'}`}>
-                                                <p className="text-[10px] font-black uppercase mb-4 tracking-[0.3em] opacity-60">{isCorrect ? 'Perfect' : 'Incorrect'}</p>
+                                                <p className="text-[10px] font-black uppercase mb-4 tracking-[0.3em] opacity-60 font-bold">{isCorrect ? 'Perfect Mission' : 'Missed Target'}</p>
                                                 <p className="text-7xl font-black italic uppercase leading-none">{quizList[qIdx].word}</p>
                                             </div>
                                             <button onClick={handleNext} className="w-full bg-slate-900 text-white py-10 rounded-[3.5rem] font-black text-4xl btn-press shadow-2xl uppercase italic">Next Mission →</button>
@@ -209,19 +200,12 @@
 
                         {scene === 'result' && (
                             <div className="p-8 text-center space-y-12 h-full flex flex-col justify-center animate-in zoom-in-90 duration-500">
-                                <h2 className="text-6xl font-black italic uppercase tracking-tighter leading-none">Session<br/>Cleared!</h2>
+                                <h2 className="text-6xl font-black italic uppercase tracking-tighter leading-none">Session<br/>Completed</h2>
                                 <div className="bg-slate-50 p-16 rounded-[6rem] shadow-inner relative overflow-hidden">
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 italic">Performance Score</p>
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 italic font-bold">Performance Score</p>
                                     <div className="text-[14rem] font-black text-indigo-600 leading-none tracking-tighter">{score}<span className="text-5xl text-slate-300 ml-2">/10</span></div>
-                                    <div className="absolute top-0 left-0 w-full h-full bg-indigo-600/5 animate-pulse"></div>
                                 </div>
-                                <div className="space-y-4">
-                                    <button onClick={() => {
-                                        const msg = `スペリング学習報告\nスコア: ${score}/10\n総合達成率: ${totalAccuracy}%`;
-                                        window.location.href=`mailto:?subject=Spelling Report&body=${encodeURIComponent(msg)}`;
-                                    }} className="w-full bg-emerald-500 text-white py-8 rounded-[3.5rem] font-black text-3xl btn-press italic uppercase tracking-tighter shadow-lg shadow-emerald-100">Send Report 📧</button>
-                                    <button onClick={()=>setScene('home')} className="w-full font-black text-slate-400 py-4 uppercase tracking-[0.2em] italic">Back to Menu</button>
-                                </div>
+                                <button onClick={()=>setScene('home')} className="w-full bg-indigo-600 text-white py-8 rounded-[3.5rem] font-black text-3xl btn-press shadow-xl uppercase italic">Return to Base</button>
                             </div>
                         )}
                     </main>
